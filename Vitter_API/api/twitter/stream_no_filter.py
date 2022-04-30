@@ -24,27 +24,24 @@ def limpiar_acentos(text):
 			text = text.replace(acen, acentos[acen])
 	return text
 
-tendencias = []
+tweets = []
 
 class MyListener(tweepy.Stream):
     def on_status(self, status):
-        tendencias.append({'id':''.join(random.choices(alphabet, k=8))
+        tweets.append({'id':''.join(random.choices(alphabet, k=8))
         ,'author_name':status.author.screen_name
-        ,'tweet_text':status.text
-        ,'tweet_date':status.created_at
+        ,'tweet_text':limpiar_acentos(status.text)
+        ,'tweet_date':str(status.created_at)
         ,"tweet_source" :status.source
-        ,"tweet_location": status.user.location
-        ,"tweet_coordinates":status.place.full_name
+        ,"tweet_location": limpiar_acentos(str(status.user.location))
+        ,"tweet_coordinates":str(status.place.bounding_box.coordinates)
         ,'Lugar':limpiar_acentos(status.place.full_name)
         ,'Latitud':(((str(status.place.bounding_box.coordinates)).replace('[','')).replace(']',''))[12:20]
         ,'Longitud':(((str(status.place.bounding_box.coordinates)).replace('[','')).replace(']',''))[:9]})
-        json_object = json.dumps(tendencias, indent=4, sort_keys=True, default=str)
-        json_or_object = status._json
-        print(json_object)
-        print(json_or_object)
-
-
-
+        if len(tweets) == 10:
+          json_object = json.dumps(tweets, indent= 4)
+          print(json_object)
+          sys.exit()
 
     def on_error(self, status):        
         print (status)
@@ -62,3 +59,4 @@ twitter_stream = MyListener(
 #         twitter_stream.filter(track=trend['name'],languages='es',filter_level='medium')
 #twitter_stream.filter(track='Bogota',languages = ["es"],locations=[-78.8474730429,-2.0337756537,-67.9637787173,12.0054938177])
 twitter_stream.filter(languages = ["es"],locations=[-77.4000522034,-0.4666495827,-69.087285033,10.9538219117])
+
